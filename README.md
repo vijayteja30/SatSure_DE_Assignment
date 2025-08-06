@@ -1,6 +1,6 @@
 # SatSure Data Engineering Assignment
 
-This project implements a complete IoT telemetry pipeline using Apache Airflow, MinIO, and Apache Iceberg (via REST catalog). The pipeline ingests, transforms, validates, stores, and reports on telemetry data.
+This project implements a complete IoT telemetry pipeline using Apache Airflow, MinIO, and Apache Iceberg. The pipeline ingests, transforms, validates, stores, and reports on telemetry data.
 
 ---
 
@@ -49,6 +49,8 @@ docker compose up -d
 python telemetry_data_generator.py
 python config_data_generator.py
 ```
+Once the scripts are executed it will generate the sample data under the ./data/raw/ folder. Upload sample data to 
+MinIO for testing DAG requests
 
 ### Upload to MinIO
 1. Login to MinIO (`admin` / `password123`)
@@ -66,7 +68,7 @@ sudo pip install pytest moto[all] boto3
 cd /opt/airflow
 pytest tests/ -v
 ```
-> Validation script may fail by design (data issues)
+> Validation script may fail by design (data issues). It's kept to fail when there are null data exists in quality reports.
 
 ---
 
@@ -90,7 +92,7 @@ pytest tests/ -v
     - Handles schema evolution
     - Supports upserts using MERGE (Spark) or insert+delete (DuckDB)
 5. **Reporting**:
-    - Row counts, anomalies, timing via decorator
+    - Row counts, anomalies, timing capture via decorator help "record_task_timing"
     - Optionally includes Iceberg snapshot stats if REST/Spark is enabled
 
 ---
