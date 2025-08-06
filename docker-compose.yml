@@ -1,0 +1,112 @@
+services:
+
+  # Airflow metadata database
+  postgres:
+    image: postgres:13
+    environment:
+      POSTGRES_USER: airflow
+      POSTGRES_PASSWORD: airflow
+      POSTGRES_DB: airflow
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  # Airflow web UI
+  webserver:
+    build: .
+    depends_on:
+      - postgres
+    environment:
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
+      AIRFLOW__CORE__FERNET_KEY: ''
+      AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: 'false'
+      AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
+      AIRFLOW__WEBSERVER__SECRET_KEY: my-static-secret-key-123
+    volumes:
+      - ./dags:/opt/airflow/dags
+      - ./modules:/opt/airflow/modules
+      - ./data:/opt/airflow/data
+      - ./tests:/opt/airflow/tests
+      - ./logs:/opt/airflow/logs
+      - ./spark/conf:/opt/spark/conf
+      - ./spark/jars:/opt/spark/jars
+    ports:
+      - "8080:8080"
+    command: webserver
+
+  # Airflow scheduler (triggers DAG tasks)
+  scheduler:
+    build: .
+    depends_on:
+      - webserver
+    environment:
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
+      AIRFLOW__WEBSERVER__SECRET_KEY: my-static-secret-key-123
+    volumes:
+      - ./dags:/opt/airflow/dags
+      - ./modules:/opt/airflow/modules
+      - ./data:/opt/airflow/data
+      - ./logs:/opt/airflow/logs
+      - ./spark/conf:/opt/spark/conf
+      - ./spark/jars:/opt/spark/jars
+    command: scheduler
+
+  # Airflow DB initializer (run only once)
+  airflow-init:
+    build: .
+    depends_on:
+      - postgres
+    environment:
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
+      AIRFLOW__WEBSERVER__SECRET_KEY: my-static-secret-key-123
+    volumes:
+      - ./dags:/opt/airflow/dags
+      - ./modules:/opt/airflow/modules
+      - ./data:/opt/airflow/data
+      - ./logs:/opt/airflow/logs
+    entrypoint: /bin/bash
+    command: -c "airflow db init && airflow users create --username admin --password admin --firstname Air --lastname Flow --role Admin --email admin@example.com"
+
+  # iceberg-rest:
+  #   depends_on:
+  #     - minio
+  #   environment:
+  #     - 'CATALOG_WAREHOUSE=s3a://warehouse/'
+  #     - AWS_REGION=us-east-1
+  #     - AWS_ACCESS_KEY_ID=admin
+  #     - AWS_SECRET_ACCESS_KEY=password123
+  #     - 'S3_ENDPOINT=http://minio:9000'
+  #     - S3_PATH_STYLE_ACCESS=true
+  #     - CATALOG_TYPE=rest
+  #   image: 'tabulario/iceberg-rest:latest'
+  #   ports:
+  #     - '8181:8181'
+
+  # trino:
+  #   depends_on:
+  #     - iceberg-rest
+  #   image: 'trinodb/trino:latest'
+  #   ports:
+  #     - '8081:8080'
+  #   volumes:
+  #     - './trino/etc:/etc/trino'
+  
+
+  # MinIO - S3 compatible storage
+  minio:
+    image: minio/minio
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio_data:/data
+    environment:
+      MINIO_ROOT_USER: admin
+      MINIO_ROOT_PASSWORD: password123
+    command: server /data --console-address ":9001"
+
+volumes:
+  postgres_data:
+  minio_data:

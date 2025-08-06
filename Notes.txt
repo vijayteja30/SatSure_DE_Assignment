@@ -1,0 +1,25 @@
+#stop everything and cleanup
+docker compose down --volumes --remove-orphans
+
+#build/rebuild everything
+docker compose build
+
+# Run airflow init to load all config and initialize everything (only once ifn't yet done)
+docker compose run --rm airflow-init
+
+#start all services
+docker compose up
+
+
+
+# Testing Scripts Flow
+docker exec -it airflow-webserver bash
+
+sudo pip install pytest moto[all] boto3
+
+
+cd /opt/airflow/
+
+pytest tests/test_ingestion.py -v
+
+pytest tests/ -v

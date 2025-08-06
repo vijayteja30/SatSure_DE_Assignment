@@ -1,0 +1,9 @@
+pandas
+pyarrow
+duckdb
+pyiceberg
+boto3
+s3fs
+pyspark
+pytest
+moto
