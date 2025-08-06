@@ -71,6 +71,8 @@ def generate_report(**context):
             # "iceberg_operation": operation,
             # "iceberg_committed_at": committed_at,
         }
+        
+        logging.info(f"Task duration details are: {task_durations}")
         # Add task durations
         for task_id, duration in task_durations.items():
             report[f"{task_id}_duration_sec"] = duration

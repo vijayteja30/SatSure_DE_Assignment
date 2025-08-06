@@ -5,8 +5,10 @@ import logging
 def record_task_timing(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
-        context = kwargs.get("context") or (args[0] if args else None)
-        ti = context.get("ti") if context else None
+        logging.info(f"Context arguments for: {func} are: {args} \n\n {kwargs}")
+        ti = kwargs.get('ti', None)
+        
+        logging.info(f"Task instance data is: {ti}")
 
         start_time = datetime.utcnow()
         if ti:

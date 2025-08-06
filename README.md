@@ -160,6 +160,12 @@ TBLPROPERTIES (
 )
 ```
 
+## Monitoring and Statistics
+![Alt text](readme_media/images/quality_validation.png)
+
+## Quality report
+![Alt text](readme_media/images/reporting_data.png)
+
 ---
 
 ## License & Acknowledgments
