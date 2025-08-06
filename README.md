@@ -161,9 +161,11 @@ TBLPROPERTIES (
 ```
 
 ## Monitoring and Statistics
+Below is the sample reporting information
 ![Alt text](readme_media/images/quality_validation.png)
 
 ## Quality report
+Below is the sample validation quality information
 ![Alt text](readme_media/images/reporting_data.png)
 
 ---
